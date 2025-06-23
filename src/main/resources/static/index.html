@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insurance Requests</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #aaa; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+
+        form {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+
+        label {
+            display: inline-block;
+            width: 150px;
+            margin-bottom: 8px;
+        }
+
+        input, select {
+            margin-bottom: 10px;
+            padding: 5px;
+            width: 200px;
+        }
+
+        button {
+            padding: 8px 16px;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Insurance Premium Calculator</h1>
+
+<!-- Form to submit new request -->
+<form id="premiumForm">
+    <div>
+        <label for="kilometers">Kilometers per year:</label>
+        <input type="number" id="kilometers" name="kilometers" required>
+    </div>
+    <div>
+        <label for="plz">Postal Code (PLZ):</label>
+        <input type="text" id="plz" name="plz" required>
+    </div>
+    <div>
+        <label for="vehicleType">Vehicle Type:</label>
+        <select id="vehicleType" name="vehicleType">
+            <option value="CAR">CAR</option>
+            <option value="MOTORCYCLE">MOTORCYCLE</option>
+            <option value="TRUCK">TRUCK</option>
+        </select>
+    </div>
+    <button type="submit">Calculate Premium</button>
+    <p class="error" id="errorMsg"></p>
+    <p id="resultMsg" style="color: green; font-weight: bold;"></p>
+</form>
+
+<!-- Table with past insurance requests -->
+<table id="requestsTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Kilometers</th>
+        <th>PLZ</th>
+        <th>Vehicle Type</th>
+        <th>Premium</th>
+        <th>Request Time</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    // Load all existing requests
+    function loadRequests() {
+        fetch('/api/premium/all-requests')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.querySelector("#requestsTable tbody");
+                tbody.innerHTML = ""; // clear table before adding
+                data.forEach(r => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${r.id}</td>
+                        <td>${r.kilometersPerYear}</td>
+                        <td>${r.plz}</td>
+                        <td>${r.vehicleType}</td>
+                        <td>${r.calculatedPremium.toFixed(2)}</td>
+                        <td>${r.requestTime.replace('T', ' ')}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(err => {
+                document.body.innerHTML += "<p style='color:red;'>Error loading data.</p>";
+                console.error(err);
+            });
+    }
+
+    // Submit form
+    document.getElementById("premiumForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        document.getElementById("resultMsg").textContent = "";
+        const kilometers = parseInt(document.getElementById("kilometers").value);
+        const plz = document.getElementById("plz").value;
+        const vehicleType = document.getElementById("vehicleType").value;
+        const errorMsg = document.getElementById("errorMsg");
+
+        fetch("/api/premium/calculate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ kilometersPerYear: kilometers, plz, vehicleType })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text); });
+                }
+                return response.json();
+            })
+            .then(premium => {
+                errorMsg.textContent = "";
+                document.getElementById("resultMsg").textContent = "Calculated premium: €" + premium.toFixed(2);
+                loadRequests(); // reload table
+            })
+            .catch(err => {
+                errorMsg.textContent = "Error: " + err.message;
+            });
+    });
+
+    // Initial load
+    loadRequests();
+</script>
+
+</body>
+</html>
