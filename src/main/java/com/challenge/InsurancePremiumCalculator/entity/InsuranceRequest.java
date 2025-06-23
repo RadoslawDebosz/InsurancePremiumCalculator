@@ -23,11 +23,9 @@ public class InsuranceRequest {
 
     private LocalDateTime requestTime;
 
-    // WAŻNE: domyślny konstruktor bez argumentów - Hibernate go potrzebuje
     public InsuranceRequest() {
     }
 
-    // Konstruktor z argumentami
     public InsuranceRequest(int kilometersPerYear, String plz, VehicleType vehicleType, double calculatedPremium) {
         this.kilometersPerYear = kilometersPerYear;
         this.plz = plz;
@@ -36,7 +34,6 @@ public class InsuranceRequest {
         this.requestTime = LocalDateTime.now();
     }
 
-    // Gettery i Settery
 
     public Long getId() {
         return id;

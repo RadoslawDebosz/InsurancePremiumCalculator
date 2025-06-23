@@ -24,7 +24,6 @@ public class PremiumCalculatorService {
             throw new IllegalArgumentException("Kilometers per year must be positive.");
         }
 
-        // 2. Validate PLZ exists in region map
         RegionCsvRow region = regionService.getRegionByPlz(plz);
         if (region == null) {
             throw new IllegalArgumentException("Invalid postal code: no matching region found.");

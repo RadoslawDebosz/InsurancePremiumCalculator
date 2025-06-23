@@ -7,7 +7,7 @@ import com.challenge.InsurancePremiumCalculator.service.PremiumCalculatorService
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+//
 @RestController
 @RequestMapping("/api/premium")
 public class PremiumController {
